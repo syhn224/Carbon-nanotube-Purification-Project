@@ -1,0 +1,3 @@
+C:/Users/lion/Desktop/calculation of solution characteristics/cmake-build-debug/CMakeFiles/simulasyon.dir
+C:/Users/lion/Desktop/calculation of solution characteristics/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/lion/Desktop/calculation of solution characteristics/cmake-build-debug/CMakeFiles/rebuild_cache.dir
