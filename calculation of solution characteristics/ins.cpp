@@ -25,10 +25,10 @@ private:
     inline static constexpr double CP_NMP    = 1700.0;   // J/kg·K
     inline static constexpr double SIGMA_NMP = 1e-6;     // S/m
 
-    // Maksimum viskozite sınırı (cP cinsinden) – batarya bulamacı vb. için makul üst sınır
-    inline static constexpr double MAX_VISCOSITY_CP = 50000.0;
+    // Maksimum viskozite sınırı cP cinsinden
+    inline static constexpr double MAX_VISCOSITY_CP = 60000.0;
 
-    // CNT özellik aralıkları (türe göre atanır)
+    // CNT özellik aralıkları
     double rho_cnt_min, rho_cnt_avg, rho_cnt_max;
     double k_cnt_min,   k_cnt_avg,   k_cnt_max;
     double cp_cnt_min,  cp_cnt_avg,  cp_cnt_max;
@@ -37,15 +37,15 @@ private:
 
     double cnt_gram;
     double cozelti_litre;
-    double c_g_l;        // g/L
+    double c_g_l;      
 
     RangeValue phi_cnt;   // hacimsel kesir
     RangeValue w_cnt;     // kütlesel kesir
 
-    // Elektriksel iletkenlik için sabit (perkolasyon üstü)
-    inline static constexpr double SIGMA_0 = 800.0;   // S/m
+    // Elektriksel iletkenlik için sabit
+    inline static constexpr double SIGMA_0 = 800.0;
 
-    // Yardımcı: ondalık basamak sayısını bul (double için güvenli eşik ile)
+    // ondalık basamak sayısını bul 
     static int decimalPlaces(double val) {
         if (std::abs(val - std::round(val)) < std::numeric_limits<double>::epsilon() * 10.0)
             return 0;
@@ -59,23 +59,21 @@ private:
         return static_cast<int>(last - pos);
     }
 
-    // Viskozite hesaplama (Pa·s cinsinden döner)
-    // Makul sınırlandırma uygulanır; sonuç MAX_VISCOSITY_CP'yi aşarsa sabitlenir.
+    // Viskozite hesaplama Pa·s cinsinden
     double calcSingleViscosity(double phi, double aspect_ratio) const {
         double p = aspect_ratio;
-        // İçsel viskozite (uzun lifler için yaklaşık formül)
+        // viskozite uzun lifler için
         double intrinsic_visc = (p > 1.0) ? ((p * p) / (15.0 * (std::log(2.0 * p) - 1.5)) + 2.5) : 2.5;
-        // Maksimum dolgu kesri tahmini
+        // Maksimum dolgu
         double phi_m = std::min(0.20, 3.5 / p);
 
         if (phi >= phi_m) {
-            // Maksimum dolguya ulaşıldı, viskoziteyi sınırla
-            double effective_phi = phi_m * 0.98;   // %98'ine sınırla
+            double effective_phi = phi_m * 0.98; 
             double rel_visc = std::pow(1.0 - (effective_phi / phi_m), -2.0);
             double visc_Pa_s = ETA_NMP * rel_visc;
             double visc_cP = visc_Pa_s * 1000.0;
             if (visc_cP > MAX_VISCOSITY_CP)
-                return MAX_VISCOSITY_CP / 1000.0;  // Pa·s olarak geri dön
+                return MAX_VISCOSITY_CP / 1000.0;
             return visc_Pa_s;
         }
         // Genel durum
@@ -88,7 +86,7 @@ private:
     }
 
     double calcSingleThermalConductivity(double phi, double k_p) const {
-        double n = 6.0;   // şekil faktörü
+        double n = 6.0;   // şekil
         double k_f = K_NMP;
         double num = k_p + (n - 1.0) * k_f - (n - 1.0) * phi * (k_f - k_p);
         double den = k_p + (n - 1.0) * k_f + phi * (k_f - k_p);
@@ -101,7 +99,7 @@ private:
         return (sigma_m > SIGMA_NMP) ? sigma_m : SIGMA_NMP;
     }
 
-    // Analoji (yorum) metinleri
+    //yorum
     std::string getCpAnalogy(double val) const {
         if (val < 900) return "Aluminyum / Cam benzeri dusuk isi kapasitesi (~900 J/kg*K)";
         if (val < 1300) return "Zeytinyagi / Makine Yagi benzeri (~1200-1400 J/kg*K)";
@@ -152,7 +150,7 @@ public:
         SWCNT = 3
     };
 
-    // Kurucu: gram CNT, litre çözelti, CNT tipi
+    //gram CNT, litre çözelti, CNT tipi
     NMP_CNT_Mixture(double cnt_g, double cozelti_l, CNTType type = MIXED_COMMERCIAL)
         : cnt_gram(cnt_g), cozelti_litre(cozelti_l)
     {
@@ -187,18 +185,17 @@ public:
                 break;
         }
 
-        // Hacimsel kesir aralığı (phi)
+        // Hacimsel kesir aralığı
         phi_cnt.min_val = c_g_l / rho_cnt_max;
         phi_cnt.avg_val = c_g_l / rho_cnt_avg;
         phi_cnt.max_val = c_g_l / rho_cnt_min;
 
-        // Kütlesel kesir için gerekli karışım yoğunlukları
-        // Not: rho_mix = phi*rho_cnt + (1-phi)*RHO_NMP, birimler kg/m³ = g/L
+        // rho_mix = phi*rho_cnt + (1-phi)*RHO_NMP, birimler kg/m³ = g/L
         double rho_mix_min = (phi_cnt.min_val * rho_cnt_min) + ((1.0 - phi_cnt.min_val) * RHO_NMP);
         double rho_mix_avg = (phi_cnt.avg_val * rho_cnt_avg) + ((1.0 - phi_cnt.avg_val) * RHO_NMP);
         double rho_mix_max = (phi_cnt.max_val * rho_cnt_max) + ((1.0 - phi_cnt.max_val) * RHO_NMP);
 
-        // c_g_l [g/L] / rho_mix [g/L] → kütlesel kesir (boyutsuz)
+        // c_g_l [g/L] / rho_mix [g/L] → kütlesel kesir
         w_cnt.min_val = c_g_l / rho_mix_max;
         w_cnt.avg_val = c_g_l / rho_mix_avg;
         w_cnt.max_val = c_g_l / rho_mix_min;
@@ -206,7 +203,7 @@ public:
         if (w_cnt.min_val > w_cnt.max_val) std::swap(w_cnt.min_val, w_cnt.max_val);
     }
 
-    // Özellik erişimcileri
+    // Özellik erişim
     RangeValue getDensity() const {
         return {
             (phi_cnt.min_val * rho_cnt_min) + ((1.0 - phi_cnt.min_val) * RHO_NMP),
@@ -215,7 +212,6 @@ public:
         };
     }
 
-    // Pa·s cinsinden döner
     RangeValue getViscosity() const {
         double v1 = calcSingleViscosity(phi_cnt.min_val, ar_min);
         double v2 = calcSingleViscosity(phi_cnt.avg_val, ar_avg);
@@ -240,8 +236,8 @@ public:
     }
 
     RangeValue getElectricalConductivity() const {
-        // En kötü durum (min iletkenlik) -> en büyük perkolasyon eşiği
-        // En iyi durum (max iletkenlik)  -> en küçük perkolasyon eşiği
+        // En kötü durum -> en büyük perkolasyon eşiği
+        // En iyi durum -> en küçük perkolasyon eşiği
         return {
             calcSingleElectricalConductivity(phi_cnt.min_val, phi_c_max),
             calcSingleElectricalConductivity(phi_cnt.avg_val, phi_c_avg),
@@ -280,8 +276,8 @@ public:
         RangeValue rho = getDensity();
         printRowStandard("Karisim Yogunlugu",       rho, "kg/m3");
 
-        RangeValue visc = getViscosity();   // Pa·s
-        // cP'ye çevir (1 cP = 0.001 Pa·s)
+        RangeValue visc = getViscosity();
+        
         RangeValue visc_cP = { visc.min_val * 1000.0, visc.avg_val * 1000.0, visc.max_val * 1000.0 };
         printRowStandard("Dinamik Vizkozite",        visc_cP, "mPa*s (cP)");
 
@@ -311,7 +307,7 @@ public:
         }
     }
 
-    // Sabit hacim için gram aralığı taraması
+    
     static void exportRangeCSV(double min_gram, double max_gram, double volume,
                                CNTType type, const std::string& filename)
     {
@@ -358,7 +354,7 @@ public:
                   << "CSV dosyasi: " << output_path.string() << "\n";
     }
 
-    // Ağırlıkça yüzde aralığı taraması (iteratif yoğunluk düzeltmesi ile)
+   
     static void exportRangeCSV_WtPercent(double min_wt, double max_wt, double volume,
                                          CNTType type, const std::string& filename)
     {
@@ -396,10 +392,10 @@ public:
             double wt = min_wt + i * step_wt;
             if (wt <= 0.0 || wt >= 100.0) continue;
 
-            // İteratif yoğunluk düzeltmesi ile daha hassas CNT gramajı hesapla
+
             double gram = approximateGramFromWtPercent(wt, volume, type);
             NMP_CNT_Mixture mix(gram, volume, type);
-            writeCSVRow(out, wt, gram, mix);   // wt sütununa % değerini yaz
+            writeCSVRow(out, wt, gram, mix);   
         }
 
         out.close();
@@ -408,11 +404,11 @@ public:
     }
 
 private:
-    // Ortak CSV satırı yazma (gram tabanlı taramalar için)
+
     static void writeCSVRow(std::ofstream& out, double gram, const NMP_CNT_Mixture& mix) {
         auto phi = mix.phi_cnt;
         auto rho = mix.getDensity();
-        auto visc = mix.getViscosity();   // Pa·s
+        auto visc = mix.getViscosity();   
         auto k = mix.getThermalConductivity();
         auto cp = mix.getSpecificHeat();
         auto sig = mix.getElectricalConductivity();
@@ -427,7 +423,7 @@ private:
             << sig.min_val << "," << sig.avg_val << "," << sig.max_val << "\n";
     }
 
-    // Ağırlıkça yüzde taramaları için wt değerini ilk sütuna yazan sürüm
+
     static void writeCSVRow(std::ofstream& out, double wt_pct, double gram, const NMP_CNT_Mixture& mix) {
         auto phi = mix.phi_cnt;
         auto rho = mix.getDensity();
@@ -447,18 +443,17 @@ private:
             << sig.min_val << "," << sig.avg_val << "," << sig.max_val << "\n";
     }
 
-    // wt% değerine karşılık gelen CNT gramajını iteratif olarak bul
+
     static double approximateGramFromWtPercent(double wt_pct, double volume_L, CNTType type) {
-        // İlk tahmin: karışım yoğunluğunu saf NMP kabul et
-        double rho_guess = RHO_NMP;   // kg/m³ = g/L
+
+        double rho_guess = RHO_NMP;  
         double gram = (wt_pct / (100.0 - wt_pct)) * volume_L * rho_guess;
 
-        // Basit sabit nokta iterasyonu (max 5 adım yeterli)
         for (int iter = 0; iter < 5; ++iter) {
             NMP_CNT_Mixture temp_mix(gram, volume_L, type);
-            // Ortalama yoğunluğu al (en tutarlı değer)
+
             RangeValue rho_range = temp_mix.getDensity();
-            double rho_mix_avg = rho_range.avg_val;   // kg/m³
+            double rho_mix_avg = rho_range.avg_val;   
 
             double new_gram = (wt_pct / (100.0 - wt_pct)) * volume_L * rho_mix_avg;
             if (std::abs(new_gram - gram) < 1e-6) break;
@@ -468,7 +463,6 @@ private:
     }
 };
 
-// Yardımcı: double değeri kısa string yapar (dosya adı için)
 std::string kisa(double d) {
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(3) << d;
@@ -478,7 +472,6 @@ std::string kisa(double d) {
     return s;
 }
 
-// Kullanıcı girdi alma yardımcısı (hatalı girişte temizlik yapar)
 template<typename T>
 bool safeInput(T& value, const std::string& prompt) {
     std::cout << prompt;
@@ -487,7 +480,7 @@ bool safeInput(T& value, const std::string& prompt) {
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return false;
     }
-    // Başarılı okuma sonrası satır sonuna kadar temizle (ilerideki getline vb. için)
+   
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return true;
 }
