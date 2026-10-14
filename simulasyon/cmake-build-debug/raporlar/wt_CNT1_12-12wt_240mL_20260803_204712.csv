@@ -1,0 +1,2 @@
+wt_pct,CNT_g,c_g_L,phi_min,phi_avg,phi_max,rho_min_kgm3,rho_avg_kgm3,rho_max_kgm3,visc_min_cP,visc_avg_cP,visc_max_cP,k_min_WmK,k_avg_WmK,k_max_WmK,cp_min_JkgK,cp_avg_JkgK,cp_max_JkgK,sigma_min_Sm,sigma_avg_Sm,sigma_max_Sm
+12.000000,33.643636,140.181818,0.077879,0.087614,0.100130,1056.970909,1078.115000,1105.300260,44.399573,4125.000000,4125.000000,0.248499,0.259981,0.275078,1560.490397,1563.473832,1567.374005,7.714480,9.687673,12.481252

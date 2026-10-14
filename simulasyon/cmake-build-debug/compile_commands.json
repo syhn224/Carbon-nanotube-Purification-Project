@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/lion/Desktop/simulasyon/cmake-build-debug",
+  "command": "C:\\PROGRA~1\\JETBRA~1\\CLION2~1.1\\bin\\mingw\\bin\\C__~1.EXE -g -std=gnu++17 -fdiagnostics-color=always -o CMakeFiles\\simulasyon.dir\\ins.cpp.obj -c C:\\Users\\lion\\Desktop\\simulasyon\\ins.cpp",
+  "file": "C:/Users/lion/Desktop/simulasyon/ins.cpp",
+  "output": "C:/Users/lion/Desktop/simulasyon/cmake-build-debug/CMakeFiles/simulasyon.dir/ins.cpp.obj"
+}
+]
